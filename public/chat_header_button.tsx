@@ -34,7 +34,7 @@ export const HeaderChatButton = (props: HeaderChatButtonProps) => {
   const [title, setTitle] = useState<string>();
   const [flyoutVisible, setFlyoutVisible] = useState(false);
   const [flyoutComponent, setFlyoutComponent] = useState<React.ReactNode | null>(null);
-  const [selectedTabId, setSelectedTabId] = useState<TabId>(TAB_ID.CHAT);
+  const [selectedTabId, setSelectedTabIdInner] = useState<TabId>(TAB_ID.CHAT);
   const [preSelectedTabId, setPreSelectedTabId] = useState<TabId | undefined>(undefined);
   const [interactionId, setInteractionId] = useState<string | undefined>(undefined);
   const [chatSize, setChatSize] = useState<number | 'fullscreen' | 'dock-right'>('dock-right');
@@ -53,6 +53,18 @@ export const HeaderChatButton = (props: HeaderChatButtonProps) => {
     setChatSize(flyoutFullScreen ? 'dock-right' : 'fullscreen');
   }, [flyoutFullScreen, setChatSize]);
 
+  const setSelectedTabId: typeof setSelectedTabIdInner = useCallback(
+    (selectedTabIdStateAction) => {
+      setSelectedTabIdInner((previousTabId) => {
+        setPreSelectedTabId(previousTabId);
+        return typeof selectedTabIdStateAction === 'string'
+          ? selectedTabIdStateAction
+          : selectedTabIdStateAction(previousTabId);
+      });
+    },
+    [setPreSelectedTabId]
+  );
+
   const chatContextValue: IChatContext = useMemo(
     () => ({
       appId,
@@ -60,10 +72,7 @@ export const HeaderChatButton = (props: HeaderChatButtonProps) => {
       setConversationId,
       selectedTabId,
       preSelectedTabId,
-      setSelectedTabId: (tabId: TabId) => {
-        setPreSelectedTabId(selectedTabId);
-        setSelectedTabId(tabId);
-      },
+      setSelectedTabId,
       flyoutVisible,
       flyoutFullScreen,
       setFlyoutVisible,
@@ -92,6 +101,7 @@ export const HeaderChatButton = (props: HeaderChatButtonProps) => {
       setTitle,
       interactionId,
       setInteractionId,
+      setSelectedTabId,
     ]
   );
 
@@ -121,6 +131,10 @@ export const HeaderChatButton = (props: HeaderChatButtonProps) => {
       inputRef.current?.blur();
     }
   };
+
+  const handleAssistantIconClick = useCallback(() => {
+    setFlyoutVisible((visible) => !visible);
+  }, []);
 
   useEffect(() => {
     if (!props.userHasAccess) {
@@ -155,7 +169,7 @@ export const HeaderChatButton = (props: HeaderChatButtonProps) => {
               aria-label="toggle chat flyout icon"
               type={chatIcon}
               size="l"
-              onClick={() => setFlyoutVisible(!flyoutVisible)}
+              onClick={handleAssistantIconClick}
             />
           }
           append={

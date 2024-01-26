@@ -4,7 +4,7 @@
  */
 
 import { EuiButtonIcon, EuiFlexGroup, EuiFlexItem, EuiIcon } from '@elastic/eui';
-import React from 'react';
+import React, { useCallback, useEffect } from 'react';
 import { useChatContext } from '../contexts/chat_context';
 import { ChatWindowHeaderTitle } from '../components/chat_window_header_title';
 import chatIcon from '../assets/chat.svg';
@@ -36,6 +36,20 @@ export const ChatWindowHeader = React.memo((props: ChatWindowHeaderProps) => {
     </svg>
   );
 
+  const handleHistoryIconClick = useCallback(() => {
+    chatContext.setFlyoutComponent(undefined);
+    // Back to chat tab if history page already visible
+    chatContext.setSelectedTabId((selectedTabId) =>
+      selectedTabId === TAB_ID.HISTORY ? TAB_ID.CHAT : TAB_ID.HISTORY
+    );
+  }, [chatContext.setFlyoutComponent, chatContext.setSelectedTabId]);
+
+  console.log('here....');
+
+  useEffect(() => {
+    console.log('handleHistoryIconClick:', handleHistoryIconClick);
+  }, [handleHistoryIconClick]);
+
   return (
     <>
       <EuiFlexGroup
@@ -58,13 +72,7 @@ export const ChatWindowHeader = React.memo((props: ChatWindowHeaderProps) => {
                 iconType="clock"
                 size="xs"
                 color="text"
-                onClick={() => {
-                  chatContext.setFlyoutComponent(undefined);
-                  // Back to chat tab if history page already visible
-                  chatContext.setSelectedTabId(
-                    chatContext.selectedTabId === TAB_ID.HISTORY ? TAB_ID.CHAT : TAB_ID.HISTORY
-                  );
-                }}
+                onClick={handleHistoryIconClick}
                 display={chatContext.selectedTabId === TAB_ID.HISTORY ? 'fill' : undefined}
               />
             </EuiFlexItem>

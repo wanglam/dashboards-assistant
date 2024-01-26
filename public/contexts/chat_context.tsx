@@ -12,7 +12,7 @@ export interface IChatContext {
   setConversationId: React.Dispatch<React.SetStateAction<string | undefined>>;
   selectedTabId: TabId;
   preSelectedTabId?: TabId;
-  setSelectedTabId: (tabId: TabId) => void;
+  setSelectedTabId: React.Dispatch<React.SetStateAction<TabId>>;
   flyoutVisible: boolean;
   flyoutFullScreen: boolean;
   setFlyoutVisible: React.Dispatch<React.SetStateAction<boolean>>;
