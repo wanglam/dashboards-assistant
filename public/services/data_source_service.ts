@@ -33,14 +33,14 @@ export class DataSourceService {
       return;
     }
     const defaultDataSourceId = this.uiSettings?.get('defaultDataSource', null);
-    if (defaultDataSourceId) {
-      this.dataSourceId$.next(defaultDataSourceId);
+    if (!defaultDataSourceId) {
       return;
     }
+    this.setDataSourceId(defaultDataSourceId);
   }
 
   clearDataSourceId() {
-    this.dataSourceId$.next(null);
+    this.setDataSourceId(null);
   }
 
   getDataSourceQuery() {
@@ -57,6 +57,26 @@ export class DataSourceService {
     return { dataSourceId };
   }
 
+  isMDSEnabled() {
+    return this.dataSourceManagement !== null;
+  }
+
+  subscribeDataSourceIdChange(callback: () => void) {
+    let lastDataSourceId = this.dataSourceId$.getValue();
+    return this.dataSourceId$.subscribe((newDataSourceId) => {
+      if (lastDataSourceId !== newDataSourceId) {
+        callback();
+      }
+      lastDataSourceId = newDataSourceId;
+    });
+  }
+
+  setDataSourceId(newDataSourceId: string | null) {
+    this.dataSourceId$.next(newDataSourceId);
+    console.log('set data source id here', newDataSourceId);
+    debugger;
+  }
+
   setup({
     uiSettings,
     dataSourceManagement,
@@ -71,11 +91,11 @@ export class DataSourceService {
       .getSelection$()
       .subscribe((dataSourceSelection) => {
         const selectedDataSourceOption = getDSMDataSourceSelectionOption(dataSourceSelection);
-        this.dataSourceId$.next(selectedDataSourceOption?.id ?? null);
+        this.setDataSourceId(selectedDataSourceOption?.id ?? null);
       });
     return {
       setDataSourceId: (newDataSourceId: string | null) => {
-        this.dataSourceId$.next(newDataSourceId);
+        this.setDataSourceId(newDataSourceId);
       },
     };
   }
@@ -83,7 +103,7 @@ export class DataSourceService {
   start() {
     return {
       setDataSourceId: (newDataSourceId: string | null) => {
-        this.dataSourceId$.next(newDataSourceId);
+        this.setDataSourceId(newDataSourceId);
       },
     };
   }

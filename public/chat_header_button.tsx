@@ -53,6 +53,16 @@ export const HeaderChatButton = (props: HeaderChatButtonProps) => {
   const core = useCore();
   const flyoutFullScreen = sidecarDockedMode === SIDECAR_DOCKED_MODE.TAKEOVER;
   const flyoutMountPoint = useRef(null);
+  const loadChatWhenDataSourceChange = useRef(() => {});
+  loadChatWhenDataSourceChange.current = () => {
+    if (
+      selectedTabId === 'chat' ||
+      sidecarDockedMode === SIDECAR_DOCKED_MODE.TAKEOVER ||
+      !!conversationId
+    ) {
+      props.assistantActions.loadChat();
+    }
+  };
 
   useEffectOnce(() => {
     const subscription = props.application.currentAppId$.subscribe((id) => setAppId(id));
@@ -199,18 +209,16 @@ export const HeaderChatButton = (props: HeaderChatButtonProps) => {
       return;
     }
     core.services.dataSource.initDefaultDataSourceIdIfNeed();
-    let lastDataSourceId = core.services.dataSource.dataSourceId$.getValue();
-    const subscription = core.services.dataSource.dataSourceId$.subscribe((newValue) => {
-      if (lastDataSourceId !== newValue) {
-        props.assistantActions.loadChat();
-      }
-      lastDataSourceId = newValue;
+    const subscription = core.services.dataSource.subscribeDataSourceIdChange(() => {
+      loadChatWhenDataSourceChange.current();
     });
     return () => {
       core.services.dataSource.clearDataSourceId();
       subscription.unsubscribe();
     };
-  }, [flyoutVisible, core.services.dataSource, props.assistantActions.loadChat]);
+  }, [flyoutVisible, core.services.dataSource]);
+
+  console.log(selectedTabId);
 
   return (
     <>

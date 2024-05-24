@@ -120,6 +120,8 @@ export class AssistantPlugin
         const tenant = account.data.user_requested_tenant ?? '';
         this.incontextInsightRegistry?.setIsEnabled(this.config.incontextInsight.enabled);
 
+        console.log('assistantActions:', assistantActions);
+
         coreStart.chrome.navControls.registerRight({
           order: 10000,
           mount: toMountPoint(
