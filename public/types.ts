@@ -9,6 +9,7 @@ import { IMessage, ISuggestedAction } from '../common/types/chat_saved_object_at
 import { IChatContext } from './contexts/chat_context';
 import { MessageContentProps } from './tabs/chat/messages/message_content';
 import { IncontextInsightRegistry } from './services';
+import type { DataSourceManagementPluginSetup } from '../../../src/plugins/data_source_management/public';
 
 export interface RenderProps {
   props: MessageContentProps;
@@ -34,6 +35,7 @@ export interface AssistantPluginStartDependencies {
 export interface AssistantPluginSetupDependencies {
   embeddable: EmbeddableSetup;
   securityDashboards?: {};
+  dataSourceManagement?: DataSourceManagementPluginSetup;
 }
 
 export interface AssistantSetup {

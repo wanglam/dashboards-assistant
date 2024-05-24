@@ -25,6 +25,7 @@ export const useFetchAgentFrameworkTraces = (interactionId: string) => {
     core.services.http
       .get<AgentFrameworkTrace[]>(`${ASSISTANT_API.TRACE}/${interactionId}`, {
         signal: abortController.signal,
+        query: core.services.dataSource.getDataSourceQuery(),
       })
       .then((payload) =>
         dispatch({
@@ -38,7 +39,7 @@ export const useFetchAgentFrameworkTraces = (interactionId: string) => {
       });
 
     return () => abortController.abort();
-  }, [core.services.http, interactionId]);
+  }, [core.services.http, core.services.dataSource, interactionId]);
 
   return { ...state };
 };

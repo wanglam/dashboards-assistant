@@ -26,6 +26,7 @@ export const useSaveChat = () => {
         body: JSON.stringify({
           name,
         }),
+        // TODO: Pass data source id to create notebook API if support
       });
       if (!id) {
         throw new Error('create notebook error');
@@ -45,6 +46,7 @@ export const useSaveChat = () => {
             noteId: id,
             paragraphs,
           }),
+          // TODO: Pass data source id to create notebook API if support
         }
       );
       const { objectId } = response;

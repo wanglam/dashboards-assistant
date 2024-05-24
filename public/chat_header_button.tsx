@@ -194,6 +194,16 @@ export const HeaderChatButton = (props: HeaderChatButtonProps) => {
     };
   }, [appId, flyoutVisible, props.assistantActions, registry]);
 
+  useEffect(() => {
+    if (!flyoutVisible) {
+      return;
+    }
+    core.services.dataSource.initDefaultDataSourceIdIfNeed();
+    return () => {
+      core.services.dataSource.clearDataSourceId();
+    };
+  }, [flyoutVisible, core.services.dataSource]);
+
   return (
     <>
       <div className={classNames('llm-chat-header-icon-wrapper')}>

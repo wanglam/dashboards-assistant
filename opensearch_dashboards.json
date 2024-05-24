@@ -10,10 +10,6 @@
     "opensearchDashboardsReact",
     "opensearchDashboardsUtils"
   ],
-  "optionalPlugins": [
-    "securityDashboards"
-  ],
-  "configPath": [
-    "assistant"
-  ]
+  "optionalPlugins": ["securityDashboards", "dataSource", "dataSourceManagement"],
+  "configPath": ["assistant"]
 }
