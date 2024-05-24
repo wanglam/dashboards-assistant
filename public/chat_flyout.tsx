@@ -6,12 +6,14 @@
 import { EuiResizableContainer } from '@elastic/eui';
 import cs from 'classnames';
 import React, { useRef } from 'react';
+import { useUpdateEffect } from 'react-use';
 import { useChatContext } from './contexts/chat_context';
 import { ChatPage } from './tabs/chat/chat_page';
 import { ChatWindowHeader } from './tabs/chat_window_header';
 import { ChatHistoryPage } from './tabs/history/chat_history_page';
 import { AgentFrameworkTracesFlyoutBody } from './components/agent_framework_traces_flyout_body';
 import { TAB_ID } from './utils/constants';
+import { useCore } from './contexts';
 
 interface ChatFlyoutProps {
   flyoutVisible: boolean;
@@ -22,6 +24,9 @@ interface ChatFlyoutProps {
 export const ChatFlyout = (props: ChatFlyoutProps) => {
   const chatContext = useChatContext();
   const chatHistoryPageLoadedRef = useRef(false);
+  const core = useCore();
+  const flyoutVisibleRef = useRef(props.flyoutVisible);
+  flyoutVisibleRef.current = props.flyoutVisible;
 
   let chatPageVisible = false;
   let chatHistoryPageVisible = false;
