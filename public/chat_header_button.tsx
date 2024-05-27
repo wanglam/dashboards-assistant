@@ -218,8 +218,6 @@ export const HeaderChatButton = (props: HeaderChatButtonProps) => {
     };
   }, [flyoutVisible, core.services.dataSource]);
 
-  console.log(selectedTabId);
-
   return (
     <>
       <div className={classNames('llm-chat-header-icon-wrapper')}>

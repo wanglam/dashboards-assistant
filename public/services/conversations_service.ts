@@ -34,7 +34,6 @@ export class ConversationsService {
     this.abortController?.abort();
     this.abortController = new AbortController();
     this._options = query;
-    console.log('load conversations....');
     try {
       this.status$.next('loading');
       this.conversations$.next(

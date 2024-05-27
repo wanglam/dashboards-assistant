@@ -7,7 +7,13 @@ import { BehaviorSubject, Subscription } from 'rxjs';
 import type { IUiSettingsClient } from '../../../../src/core/public';
 import type { DataSourceManagementPluginSetup } from '../../../../src/plugins/data_source_management/public/plugin';
 
-const getDSMDataSourceSelectionOption = (
+export enum DataSourceIdFrom {
+  UiSettings,
+  DataSourceSelection,
+  Customized,
+}
+
+export const getDSMDataSourceSelectionOption = (
   dataSourceSelection: ReturnType<
     DataSourceManagementPluginSetup['dataSourceSelection']['getSelectionValue']
   >
@@ -25,26 +31,27 @@ export class DataSourceService {
   private uiSettings: IUiSettingsClient | null = null;
   private dataSourceManagement: DataSourceManagementPluginSetup | undefined | null = null;
   private dataSourceSelectionSubscription: Subscription | undefined;
+  private dataSourceIdFrom: DataSourceIdFrom | undefined;
 
   constructor() {}
 
   initDefaultDataSourceIdIfNeed() {
-    if (!this.dataSourceManagement || this.dataSourceId$.getValue() !== null) {
+    if (!this.isMDSEnabled() || this.dataSourceId$.getValue() !== null) {
       return;
     }
     const defaultDataSourceId = this.uiSettings?.get('defaultDataSource', null);
     if (!defaultDataSourceId) {
       return;
     }
-    this.setDataSourceId(defaultDataSourceId);
+    this.setDataSourceId(defaultDataSourceId, DataSourceIdFrom.UiSettings);
   }
 
   clearDataSourceId() {
-    this.setDataSourceId(null);
+    this.setDataSourceId(null, undefined);
   }
 
   getDataSourceQuery() {
-    if (!this.dataSourceManagement) {
+    if (!this.isMDSEnabled()) {
       return {};
     }
     const dataSourceId = this.dataSourceId$.getValue();
@@ -58,7 +65,7 @@ export class DataSourceService {
   }
 
   isMDSEnabled() {
-    return this.dataSourceManagement !== null;
+    return !!this.dataSourceManagement;
   }
 
   subscribeDataSourceIdChange(callback: () => void) {
@@ -71,10 +78,12 @@ export class DataSourceService {
     });
   }
 
-  setDataSourceId(newDataSourceId: string | null) {
+  setDataSourceId(newDataSourceId: string | null, dataSourceIdFrom: DataSourceIdFrom | undefined) {
+    this.dataSourceIdFrom = dataSourceIdFrom;
+    if (this.dataSourceId$.getValue() === newDataSourceId) {
+      return;
+    }
     this.dataSourceId$.next(newDataSourceId);
-    console.log('set data source id here', newDataSourceId);
-    debugger;
   }
 
   setup({
@@ -91,11 +100,20 @@ export class DataSourceService {
       .getSelection$()
       .subscribe((dataSourceSelection) => {
         const selectedDataSourceOption = getDSMDataSourceSelectionOption(dataSourceSelection);
-        this.setDataSourceId(selectedDataSourceOption?.id ?? null);
+        this.setDataSourceId(
+          selectedDataSourceOption?.id ?? null,
+          DataSourceIdFrom.DataSourceSelection
+        );
       });
+
+    this.uiSettings.get$('defaultDataSource', null).subscribe((newDataSourceId) => {
+      if (this.dataSourceIdFrom === DataSourceIdFrom.UiSettings) {
+        this.setDataSourceId(newDataSourceId, DataSourceIdFrom.UiSettings);
+      }
+    });
     return {
       setDataSourceId: (newDataSourceId: string | null) => {
-        this.setDataSourceId(newDataSourceId);
+        this.setDataSourceId(newDataSourceId, DataSourceIdFrom.Customized);
       },
     };
   }
@@ -103,7 +121,7 @@ export class DataSourceService {
   start() {
     return {
       setDataSourceId: (newDataSourceId: string | null) => {
-        this.setDataSourceId(newDataSourceId);
+        this.setDataSourceId(newDataSourceId, DataSourceIdFrom.Customized);
       },
     };
   }
