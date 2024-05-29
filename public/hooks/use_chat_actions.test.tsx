@@ -371,4 +371,15 @@ describe('useChatActions hook', () => {
     );
     AbortControllerMock.mockRestore();
   });
+
+  it('should reset chat correctly', async () => {
+    const { result } = renderHook(() => useChatActions());
+    result.current.resetChat();
+
+    expect(chatContextMock.setConversationId).toHaveBeenLastCalledWith(undefined);
+    expect(chatContextMock.setTitle).toHaveBeenLastCalledWith(undefined);
+    expect(chatContextMock.setFlyoutComponent).toHaveBeenLastCalledWith(null);
+
+    expect(chatStateDispatchMock).toHaveBeenLastCalledWith({ type: 'reset' });
+  });
 });

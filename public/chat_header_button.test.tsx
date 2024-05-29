@@ -48,8 +48,17 @@ jest.mock('./services', () => {
   };
 });
 
+const dataSourceId$ = new BehaviorSubject<string | null>(null);
+const dataSourceMock = {
+  init: jest.fn(),
+  getDataSourceId$: jest.fn(() => dataSourceId$),
+};
+
 // mock sidecar open,hide and show
 jest.spyOn(coreContextExports, 'useCore').mockReturnValue({
+  services: {
+    dataSource: dataSourceMock,
+  },
   overlays: {
     // @ts-ignore
     sidecar: () => {
@@ -216,5 +225,23 @@ describe('<HeaderChatButton />', () => {
       metaKey: true,
     });
     expect(screen.getByLabelText('chat input')).not.toHaveFocus();
+  });
+
+  it('should call resetChat after data source change', () => {
+    const resetChatMock = jest.fn();
+    dataSourceId$.next('foo');
+    render(
+      <HeaderChatButton
+        application={applicationServiceMock.createStartContract()}
+        userHasAccess={false}
+        messageRenderers={{}}
+        actionExecutors={{}}
+        assistantActions={{ resetChat: resetChatMock } as AssistantActions}
+        currentAccount={{ username: 'test_user', tenant: 'test_tenant' }}
+      />
+    );
+
+    dataSourceId$.next('bar');
+    expect(resetChatMock).toHaveBeenCalled();
   });
 });
