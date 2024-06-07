@@ -42,12 +42,12 @@ export const ChatHistoryPage: React.FC<ChatHistoryPageProps> = React.memo((props
     setConversationId,
     setTitle,
   } = useChatContext();
+  const dataSourceIdUpdates = useObservable(services.dataSource.dataSourceIdUpdates$);
   const [pageIndex, setPageIndex] = useState(0);
   const [pageSize, setPageSize] = useState(10);
   const [searchName, setSearchName] = useState<string>('');
   const [debouncedSearchName, setDebouncedSearchName] = useState<string>('');
-  const dataSourceIdUpdates = useObservable(services.dataSource.dataSourceIdUpdates$);
-  const dataSourceRef = useRef(dataSourceIdUpdates);
+  const [currentDataSource, setCurrentDataSource] = useState('');
   const bulkGetOptions = useMemo(
     () => ({
       page: pageIndex + 1,
@@ -57,7 +57,7 @@ export const ChatHistoryPage: React.FC<ChatHistoryPageProps> = React.memo((props
       sortOrder: 'DESC',
       ...(debouncedSearchName ? { search: debouncedSearchName, searchFields: ['title'] } : {}),
     }),
-    [pageIndex, pageSize, debouncedSearchName, dataSourceRef.current]
+    [pageIndex, pageSize, debouncedSearchName, currentDataSource]
   );
   const conversations = useObservable(services.conversations.conversations$);
   const loading = useObservable(services.conversations.status$) === 'loading';
@@ -113,7 +113,7 @@ export const ChatHistoryPage: React.FC<ChatHistoryPageProps> = React.memo((props
     setSearchName('');
     setDebouncedSearchName('');
     setPageIndex(0);
-    dataSourceRef.current = dataSourceIdUpdates;
+    setCurrentDataSource(dataSourceIdUpdates);
   }, [dataSourceIdUpdates]);
 
   useEffect(() => {
