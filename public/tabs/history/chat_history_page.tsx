@@ -46,6 +46,8 @@ export const ChatHistoryPage: React.FC<ChatHistoryPageProps> = React.memo((props
   const [pageSize, setPageSize] = useState(10);
   const [searchName, setSearchName] = useState<string>('');
   const [debouncedSearchName, setDebouncedSearchName] = useState<string>('');
+  const dataSourceIdUpdates = useObservable(services.dataSource.dataSourceIdUpdates$);
+  const dataSourceRef = useRef(dataSourceIdUpdates);
   const bulkGetOptions = useMemo(
     () => ({
       page: pageIndex + 1,
@@ -55,7 +57,7 @@ export const ChatHistoryPage: React.FC<ChatHistoryPageProps> = React.memo((props
       sortOrder: 'DESC',
       ...(debouncedSearchName ? { search: debouncedSearchName, searchFields: ['title'] } : {}),
     }),
-    [pageIndex, pageSize, debouncedSearchName]
+    [pageIndex, pageSize, debouncedSearchName, dataSourceRef.current]
   );
   const conversations = useObservable(services.conversations.conversations$);
   const loading = useObservable(services.conversations.status$) === 'loading';
@@ -108,25 +110,16 @@ export const ChatHistoryPage: React.FC<ChatHistoryPageProps> = React.memo((props
   }, [props.shouldRefresh, services.conversations]);
 
   useEffect(() => {
+    setSearchName('');
+    setDebouncedSearchName('');
+    setPageIndex(0);
+    dataSourceRef.current = dataSourceIdUpdates;
+  }, [dataSourceIdUpdates]);
+
+  useEffect(() => {
     services.conversations.load(bulkGetOptions);
-    const subscription = services.dataSource.dataSourceIdUpdates$.subscribe(() => {
-      // Load conversations directly if options are default values
-      if (!bulkGetOptions.search && bulkGetOptions.page === 1) {
-        services.conversations.reload();
-        return;
-      }
-      // Reset changes to default, these operations will trigger load after state updates
-      if (bulkGetOptions.search) {
-        setSearchName('');
-        setDebouncedSearchName('');
-      }
-      if (bulkGetOptions.page !== 1) {
-        setPageIndex(0);
-      }
-    });
     return () => {
       services.conversations.abortController?.abort();
-      subscription.unsubscribe();
     };
   }, [services.conversations, bulkGetOptions]);
 
