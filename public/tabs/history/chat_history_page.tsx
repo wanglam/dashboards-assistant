@@ -109,7 +109,7 @@ export const ChatHistoryPage: React.FC<ChatHistoryPageProps> = React.memo((props
     };
   }, [props.shouldRefresh, services.conversations]);
 
-  useEffect(() => {
+  useUpdateEffect(() => {
     setSearchName('');
     setDebouncedSearchName('');
     setPageIndex(0);
