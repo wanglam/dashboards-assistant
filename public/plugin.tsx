@@ -283,6 +283,22 @@ export class AssistantPlugin
         return;
       }
 
+      core.chrome.globalSearch.registerSearchSubmitCommand({
+        id: 'AI_CHATBOT_COMMAND',
+        name: i18n.translate('dashboardAssistant.searchSubmitCommand.aiChatbot', {
+          defaultMessage: 'chat with AI',
+        }),
+        run: async ({ content }: { content: string }) => {
+          await assistantActions.openChatUI();
+          await assistantActions.loadChat(undefined);
+          await assistantActions.send({
+            type: 'input',
+            contentType: 'text',
+            content,
+          });
+        },
+      });
+
       const {
         isQuerySummaryCollapsed$,
         resultSummaryEnabled$,
